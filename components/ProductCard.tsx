@@ -10,6 +10,28 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, updateSignedInUser }: ProductCardProps) => {
+  // Hàm xử lý giá tiền
+  const formatPrice = (price: any) => {
+    if (!price) return "0";
+
+    // Nếu price là đối tượng có $numberDecimal
+    if (
+      typeof price === "object" &&
+      price !== null &&
+      "$numberDecimal" in price
+    ) {
+      return parseFloat(price.$numberDecimal).toLocaleString("vi-VN");
+    }
+
+    // Nếu là số thường
+    if (typeof price === "number") {
+      return price.toLocaleString("vi-VN");
+    }
+
+    // Trường hợp khác
+    return String(price);
+  };
+
   return (
     <Link
       href={`/products/${product._id}`}
@@ -27,7 +49,7 @@ const ProductCard = ({ product, updateSignedInUser }: ProductCardProps) => {
         <p className="text-small-medium text-grey-2">{product.category}</p>
       </div>
       <div className="flex justify-between items-center">
-        <p className="text-body-bold">{product.price} VNĐ</p>
+        <p className="text-body-bold">{formatPrice(product.price)} VND</p>
         <HeartFavorite
           product={product}
           updateSignedInUser={updateSignedInUser}

@@ -17,6 +17,28 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
 
   const cart = useCart();
 
+  // Hàm xử lý giá tiền
+  const formatPrice = (price: any) => {
+    if (!price) return "0";
+
+    // Nếu price là đối tượng có $numberDecimal
+    if (
+      typeof price === "object" &&
+      price !== null &&
+      "$numberDecimal" in price
+    ) {
+      return parseFloat(price.$numberDecimal).toLocaleString("vi-VN");
+    }
+
+    // Nếu là số thường
+    if (typeof price === "number") {
+      return price.toLocaleString("vi-VN");
+    }
+
+    // Trường hợp khác
+    return String(price);
+  };
+
   return (
     <div className="max-w-[400px] flex flex-col gap-4">
       <div className="flex justify-between items-center">
@@ -25,12 +47,13 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
       </div>
 
       <div className="flex gap-2">
-        <p className="text-base-medium text-grey-2">Category:</p>
+        <p className="text-base-medium text-grey-2">Tác Giả:</p>
         <p className="text-base-bold">{productInfo.category}</p>
       </div>
 
-      <p className="text-heading3-bold">{productInfo.price} VNĐ</p>
+      <p className="text-heading3-bold">{formatPrice(productInfo.price)} VNĐ</p>
 
+      {/* Phần còn lại giữ nguyên */}
       <div className="flex flex-col gap-2">
         <p className="text-base-medium text-grey-2">Description:</p>
         <p className="text-small-medium">{productInfo.description}</p>
@@ -38,7 +61,7 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
 
       {productInfo.colors.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-base-medium text-grey-2">Colors:</p>
+          <p className="text-base-medium text-grey-2">Số tập: </p>
           <div className="flex gap-2">
             {productInfo.colors.map((color, index) => (
               <p
@@ -57,7 +80,7 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
 
       {productInfo.sizes.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-base-medium text-grey-2">Sizes:</p>
+          <p className="text-base-medium text-grey-2">Số phần: </p>
           <div className="flex gap-2">
             {productInfo.sizes.map((size, index) => (
               <p
@@ -75,7 +98,7 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
       )}
 
       <div className="flex flex-col gap-2">
-        <p className="text-base-medium text-grey-2">Quantity:</p>
+        <p className="text-base-medium text-grey-2">Số lượng:</p>
         <div className="flex gap-4 items-center">
           <MinusCircle
             className="hover:text-red-1 cursor-pointer"
