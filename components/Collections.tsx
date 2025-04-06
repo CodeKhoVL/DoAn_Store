@@ -7,9 +7,9 @@ const Collections = async () => {
 
   return (
     <div className="flex flex-col items-center gap-10 py-8 px-5">
-      <p className="text-heading1-bold">Collections</p>
+      <p className="text-heading1-bold">Danh mục sách</p>
       {!collections || collections.length === 0 ? (
-        <p className="text-body-bold">No collections found</p>
+        <p className="text-body-bold">Không tìm thấy dnah mục</p>
       ) : (
         <div className="flex flex-wrap items-center justify-center gap-8">
           {collections.map((collection: CollectionType) => (

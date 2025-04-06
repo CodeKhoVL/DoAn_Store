@@ -1,25 +1,26 @@
 {
-  "name": "borcella_store",
+  "name": "library_store",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint"
+},
   "dependencies": {
-    "@clerk/nextjs": "^4.29.7",
-    "@stripe/stripe-js": "^3.0.6",
+    "@clerk/nextjs": "^4.31.8",
+    "@stripe/stripe-js": "^3.5.0",
+    "dotenv": "^16.4.7",
     "lucide-react": "^0.341.0",
-    "mongoose": "^8.2.0",
-    "next": "14.1.0",
+    "mongoose": "^8.13.1",
+    "next": "^14.2.25",
     "react": "^18",
     "react-dom": "^18",
-    "react-hot-toast": "^2.4.1",
-    "stripe": "^14.18.0",
-    "tailwind-scrollbar-hide": "^1.1.7",
-    "zustand": "^4.5.1"
+    "react-hot-toast": "^2.5.2",
+    "stripe": "^14.25.0",
+    "tailwind-scrollbar-hide": "^1.3.1",
+    "zustand": "^4.5.6"
   },
   "devDependencies": {
     "@types/node": "^20",
