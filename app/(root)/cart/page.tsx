@@ -1,6 +1,7 @@
 "use client";
 
 import useCart from "@/lib/hooks/useCart";
+import { formatPrice, formatPriceDisplay } from "@/lib/utils/format"; // Thêm import này
 
 import { useUser } from "@clerk/nextjs";
 import { MinusCircle, PlusCircle, Trash } from "lucide-react";
@@ -12,8 +13,10 @@ const Cart = () => {
   const { user } = useUser();
   const cart = useCart();
 
+  // Sửa cách tính tổng tiền để xử lý Decimal128
   const total = cart.cartItems.reduce(
-    (acc, cartItem) => acc + cartItem.item.price * cartItem.quantity,
+    (acc, cartItem) =>
+      acc + formatPrice(cartItem.item.price) * cartItem.quantity,
     0
   );
   const totalRounded = parseFloat(total.toFixed(2));
@@ -45,15 +48,18 @@ const Cart = () => {
   return (
     <div className="flex gap-20 py-16 px-10 max-lg:flex-col max-sm:px-3">
       <div className="w-2/3 max-lg:w-full">
-        <p className="text-heading3-bold">Shopping Cart</p>
+        <p className="text-heading3-bold">Giỏ hàng</p>
         <hr className="my-6" />
 
         {cart.cartItems.length === 0 ? (
-          <p className="text-body-bold">No item in cart</p>
+          <p className="text-body-bold">Không có sản phẩm nào</p>
         ) : (
           <div>
             {cart.cartItems.map((cartItem) => (
-              <div className="w-full flex max-sm:flex-col max-sm:gap-3 hover:bg-grey-1 px-4 py-3 items-center max-sm:items-start justify-between">
+              <div
+                className="w-full flex max-sm:flex-col max-sm:gap-3 hover:bg-grey-1 px-4 py-3 items-center max-sm:items-start justify-between"
+                key={cartItem.item._id}
+              >
                 <div className="flex items-center">
                   <Image
                     src={cartItem.item.media[0]}
@@ -70,7 +76,10 @@ const Cart = () => {
                     {cartItem.size && (
                       <p className="text-small-medium">{cartItem.size}</p>
                     )}
-                    <p className="text-small-medium">${cartItem.item.price}</p>
+                    {/* Sửa hiển thị giá tiền */}
+                    <p className="text-small-medium">
+                      {formatPriceDisplay(cartItem.item.price)} VNĐ
+                    </p>
                   </div>
                 </div>
 
@@ -98,14 +107,14 @@ const Cart = () => {
 
       <div className="w-1/3 max-lg:w-full flex flex-col gap-8 bg-grey-1 rounded-lg px-4 py-5">
         <p className="text-heading4-bold pb-4">
-          Summary{" "}
+          Tóm tắt{" "}
           <span>{`(${cart.cartItems.length} ${
             cart.cartItems.length > 1 ? "items" : "item"
           })`}</span>
         </p>
         <div className="flex justify-between text-body-semibold">
-          <span>Total Amount</span>
-          <span>$ {totalRounded}</span>
+          <span>Tổng số tiền: </span>
+          <span> {totalRounded.toLocaleString("vi-VN")} VNĐ</span>
         </div>
         <button
           className="border rounded-lg text-body-bold bg-white py-3 w-full hover:bg-black hover:text-white"
