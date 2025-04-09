@@ -18,13 +18,13 @@ export const POST = async (req: NextRequest) => {
     const user = await User.findOne({ clerkId: userId })
 
     if (!user) {
-      return new NextResponse("User not found", { status: 404 })
+      return new NextResponse("Không tìm thấy users", { status: 404 })
     }
 
     const { productId } = await req.json()
 
     if (!productId) {
-      return new NextResponse("Product Id required", { status: 400 })
+      return new NextResponse("Sản phẩm k được tìm thấy", { status: 400 })
     }
 
     const isLiked = user.wishlist.includes(productId)
@@ -42,6 +42,6 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json(user, { status: 200 })
   } catch (err) {
     console.log("[wishlist_POST]", err);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return new NextResponse("Server Error", { status: 500 });
   }
 }

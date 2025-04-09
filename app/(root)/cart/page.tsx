@@ -1,7 +1,7 @@
 "use client";
 
 import useCart from "@/lib/hooks/useCart";
-import { formatPrice, formatPriceDisplay } from "@/lib/utils/format"; // Thêm import này
+import { formatPrice, formatPriceDisplay } from "@/lib/utils/format";
 
 import { useUser } from "@clerk/nextjs";
 import { MinusCircle, PlusCircle, Trash } from "lucide-react";
@@ -13,7 +13,6 @@ const Cart = () => {
   const { user } = useUser();
   const cart = useCart();
 
-  // Sửa cách tính tổng tiền để xử lý Decimal128
   const total = cart.cartItems.reduce(
     (acc, cartItem) =>
       acc + formatPrice(cartItem.item.price) * cartItem.quantity,
@@ -23,25 +22,51 @@ const Cart = () => {
 
   const customer = {
     clerkId: user?.id,
-    email: user?.emailAddresses[0].emailAddress,
+    email: user?.emailAddresses[0]?.emailAddress,
     name: user?.fullName,
   };
 
   const handleCheckout = async () => {
     try {
       if (!user) {
-        router.push("sign-in");
-      } else {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
-          method: "POST",
-          body: JSON.stringify({ cartItems: cart.cartItems, customer }),
-        });
-        const data = await res.json();
-        window.location.href = data.url;
-        console.log(data);
+        router.push("/sign-in");
+        return;
       }
-    } catch (err) {
-      console.log("[checkout_POST]", err);
+
+      const preparedCartItems = cart.cartItems.map((cartItem) => ({
+        ...cartItem,
+        item: {
+          ...cartItem.item,
+          price: formatPrice(cartItem.item.price), // Ép giá về number
+        },
+      }));
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ cartItems: preparedCartItems, customer }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Lỗi thanh toán (${res.status}): ${errorText}`);
+      }
+
+      const data = await res.json();
+      if (!data.url) {
+        throw new Error("Không nhận được URL thanh toán");
+      }
+
+      window.location.href = data.url;
+    } catch (err: unknown) {
+      console.error("[checkout_POST]", err);
+      alert(
+        `Thanh toán thất bại: ${
+          err instanceof Error ? err.message : "Lỗi không xác định"
+        }`
+      );
     }
   };
 
@@ -76,7 +101,6 @@ const Cart = () => {
                     {cartItem.size && (
                       <p className="text-small-medium">{cartItem.size}</p>
                     )}
-                    {/* Sửa hiển thị giá tiền */}
                     <p className="text-small-medium">
                       {formatPriceDisplay(cartItem.item.price)} VNĐ
                     </p>

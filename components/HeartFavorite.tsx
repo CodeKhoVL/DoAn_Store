@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useUser } from "@clerk/nextjs";
 import { Heart } from "lucide-react";
@@ -22,10 +22,16 @@ const HeartFavorite = ({ product, updateSignedInUser }: HeartFavoriteProps) => {
       setLoading(true);
       const res = await fetch("/api/users");
       const data = await res.json();
-      setIsLiked(data.wishlist.includes(product._id));
-      setLoading(false);
+
+      if (res.ok && data.wishlist && Array.isArray(data.wishlist)) {
+        setIsLiked(data.wishlist.includes(product._id));
+      } else {
+        console.warn("User không có wishlist hoặc chưa đăng nhập.");
+      }
     } catch (err) {
       console.log("[users_GET]", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,21 +41,34 @@ const HeartFavorite = ({ product, updateSignedInUser }: HeartFavoriteProps) => {
     }
   }, [user]);
 
-  const handleLike = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleLike = async (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
     e.preventDefault();
     try {
       if (!user) {
         router.push("/sign-in");
         return;
-      } else {
-        const res = await fetch("/api/users/wishlist", {
-          method: "POST",
-          body: JSON.stringify({ productId: product._id }),
-        });
-        const updatedUser = await res.json();
-        setIsLiked(updatedUser.wishlist.includes(product._id));
-        updateSignedInUser && updateSignedInUser(updatedUser);
       }
+
+      const res = await fetch("/api/users/wishlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId: product._id }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("[wishlist_POST]", errorText);
+        return;
+      }
+
+      const updatedUser = await res.json();
+
+      setIsLiked(updatedUser.wishlist.includes(product._id));
+      updateSignedInUser && updateSignedInUser(updatedUser);
     } catch (err) {
       console.log("[wishlist_POST]", err);
     }

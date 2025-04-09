@@ -29,9 +29,7 @@ const Orders = async () => {
   if (!userId) {
     return (
       <div className="px-10 py-5 max-sm:px-3">
-        <p className="text-heading3-bold my-10">
-          Please sign in to view your orders
-        </p>
+        <p className="text-heading3-bold my-10">Đăng nhập để đặt hàng</p>
       </div>
     );
   }
@@ -82,20 +80,20 @@ const Orders = async () => {
                       />
                     ) : (
                       <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-                        No image
+                        Không có hình ảnh
                       </div>
                     )}
 
                     <div className="flex flex-col justify-between">
                       <p className="text-small-medium">
-                        Title:{" "}
+                        Tiêu đề:{" "}
                         <span className="text-small-bold">
                           {orderItem.product?.title || "N/A"}
                         </span>
                       </p>
                       {orderItem.color && (
                         <p className="text-small-medium">
-                          Color:{" "}
+                          Số tập:{" "}
                           <span className="text-small-bold">
                             {orderItem.color}
                           </span>
@@ -103,7 +101,7 @@ const Orders = async () => {
                       )}
                       {orderItem.size && (
                         <p className="text-small-medium">
-                          Size:{" "}
+                          Số phần:{" "}
                           <span className="text-small-bold">
                             {orderItem.size}
                           </span>

@@ -30,18 +30,18 @@ const useCart = create(
         );
 
         if (isExisting) {
-          return toast("Item already in cart");
+          return toast("món đồ đã có sẵn");
         }
 
         set({ cartItems: [...currentItems, { item, quantity, color, size }] });
-        toast.success("Item added to cart", { icon: "🛒" });
+        toast.success("Thêm món đồ", { icon: "🛒" });
       },
       removeItem: (idToRemove: String) => {
         const newCartItems = get().cartItems.filter(
           (cartItem) => cartItem.item._id !== idToRemove
         );
         set({ cartItems: newCartItems });
-        toast.success("Item removed from cart");
+        toast.success("Xóa món đồ");
       },
       increaseQuantity: (idToIncrease: String) => {
         const newCartItems = get().cartItems.map((cartItem) =>
@@ -50,7 +50,7 @@ const useCart = create(
             : cartItem
         );
         set({ cartItems: newCartItems });
-        toast.success("Item quantity increased");
+        toast.success("Số lượng món đồ tăng");
       },
       decreaseQuantity: (idToDecrease: String) => {
         const newCartItems = get().cartItems.map((cartItem) =>
@@ -59,16 +59,15 @@ const useCart = create(
             : cartItem
         );
         set({ cartItems: newCartItems });
-        toast.success("Item quantity decreased");
+        toast.success("Số lượng món đồ giảm");
       },
       clearCart: () => set({ cartItems: [] }),
     }),
     {
-      name: "cart-storage",
+      name: "Kho đồ",
       storage: createJSONStorage(() => localStorage),
     }
   )
 );
 
 export default useCart;
-
