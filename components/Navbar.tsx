@@ -47,6 +47,14 @@ const Navbar = () => {
         >
           Đặt hàng
         </Link>
+        <Link
+          href={user ? "/my_loans" : "/sign-in"}
+          className={`hover:text-red-1 ${
+            pathname === "/my_loans" && "text-red-1"
+          }`}
+        >
+          Sách đã đặt
+        </Link>
       </div>
 
       <div className="flex gap-3 border border-grey-2 px-3 py-1 items-center rounded-lg">
@@ -94,6 +102,12 @@ const Navbar = () => {
               className="hover:text-red-1"
             >
               Đặt hàng
+            </Link>
+            <Link
+              href={user ? "/my_loans" : "/sign-in"}
+              className="hover:text-red-1"
+            >
+              Sách đã đặt
             </Link>
             <Link
               href="/cart"

@@ -44,3 +44,16 @@ type OrderItemType = {
   quantity: number;
   _id: string;
 }
+
+type BookReservationType = {
+  _id: string;
+  userId: string;
+  productId: string;
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  reservationDate: string;
+  pickupDate: string;
+  returnDate: string;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}

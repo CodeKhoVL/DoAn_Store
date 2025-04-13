@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint"
-},
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
     "@clerk/nextjs": "^4.31.8",
     "@stripe/stripe-js": "^3.5.0",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "lucide-react": "^0.341.0",
     "mongoose": "^8.13.1",

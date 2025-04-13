@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import HeartFavorite from "./HeartFavorite";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+import { format } from "date-fns";
 import { MinusCircle, PlusCircle } from "lucide-react";
 
 import useCart from "@/lib/hooks/useCart";
+import HeartFavorite from "./HeartFavorite";
 
 const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
   const [selectedColor, setSelectedColor] = useState<string>(
@@ -16,12 +19,18 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
   const [quantity, setQuantity] = useState<number>(1);
 
   const cart = useCart();
+  const router = useRouter();
+
+  // Thêm state cho form đặt sách
+  const [showReservationForm, setShowReservationForm] = useState(false);
+  const [pickupDate, setPickupDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
+  const [note, setNote] = useState("");
 
   // Hàm xử lý giá tiền
   const formatPrice = (price: any) => {
     if (!price) return "0";
 
-    // Nếu price là đối tượng có $numberDecimal
     if (
       typeof price === "object" &&
       price !== null &&
@@ -30,13 +39,67 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
       return parseFloat(price.$numberDecimal).toLocaleString("vi-VN");
     }
 
-    // Nếu là số thường
     if (typeof price === "number") {
       return price.toLocaleString("vi-VN");
     }
 
-    // Trường hợp khác
     return String(price);
+  };
+
+  const handleBorrowRequest = () => {
+    const user = localStorage.getItem("user"); // hoặc useSession nếu có auth
+    if (!user) {
+      router.push("/sign-in");
+      return;
+    }
+
+    const currentItems = JSON.parse(
+      localStorage.getItem("borrowItems") || "[]"
+    );
+
+    const isExisting = currentItems.some(
+      (item: any) => item._id === productInfo._id
+    );
+    if (isExisting) {
+      toast.error("Sách này đã có trong danh sách mượn");
+      return;
+    }
+
+    const updatedItems = [...currentItems, productInfo];
+    localStorage.setItem("borrowItems", JSON.stringify(updatedItems));
+
+    toast.success("Đã thêm sách vào danh sách mượn");
+    router.push("/borrow-request");
+  };
+
+  const handleReservation = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: productInfo._id,
+          pickupDate,
+          returnDate,
+          note,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Đặt sách thất bại");
+      }
+
+      toast.success("Đặt sách thành công!");
+      setShowReservationForm(false);
+      router.push("/my_loans");
+    } catch (error) {
+      console.error("Error reserving book:", error);
+      toast.error("Đặt sách thất bại. Vui lòng thử lại!");
+    }
   };
 
   return (
@@ -53,7 +116,6 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
 
       <p className="text-heading3-bold">{formatPrice(productInfo.price)} VNĐ</p>
 
-      {/* Phần còn lại giữ nguyên */}
       <div className="flex flex-col gap-2">
         <p className="text-base-medium text-grey-2">Description:</p>
         <p className="text-small-medium">{productInfo.description}</p>
@@ -112,19 +174,93 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
         </div>
       </div>
 
-      <button
-        className="outline text-base-bold py-3 rounded-lg hover:bg-black hover:text-white"
-        onClick={() => {
-          cart.addItem({
-            item: productInfo,
-            quantity,
-            color: selectedColor,
-            size: selectedSize,
-          });
-        }}
-      >
-        Add To Cart
-      </button>
+      <div className="flex gap-4 mt-2">
+        <button
+          className="outline text-base-bold py-3 rounded-lg hover:bg-black hover:text-white flex-1"
+          onClick={() =>
+            cart.addItem({
+              item: productInfo,
+              quantity,
+              color: selectedColor,
+              size: selectedSize,
+            })
+          }
+        >
+          Thêm vào giỏ
+        </button>
+
+        <button
+          className="outline text-base-bold py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex-1"
+          onClick={() => setShowReservationForm(true)}
+        >
+          Đặt sách
+        </button>
+      </div>
+
+      {showReservationForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full">
+            <h2 className="text-heading4-bold mb-4">Đặt sách</h2>
+            <form onSubmit={handleReservation} className="flex flex-col gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Ngày lấy sách
+                </label>
+                <input
+                  type="date"
+                  required
+                  min={new Date().toISOString().split("T")[0]}
+                  value={pickupDate}
+                  onChange={(e) => setPickupDate(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Ngày trả sách
+                </label>
+                <input
+                  type="date"
+                  required
+                  min={pickupDate || new Date().toISOString().split("T")[0]}
+                  value={returnDate}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Ghi chú
+                </label>
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowReservationForm(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                >
+                  Xác nhận
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
