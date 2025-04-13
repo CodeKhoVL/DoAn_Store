@@ -2,6 +2,7 @@ import Gallery from "@/components/Gallery";
 import ProductCard from "@/components/ProductCard";
 import ProductInfo from "@/components/ProductInfo";
 import { getProductDetails, getRelatedProducts } from "@/lib/actions/actions";
+import { notFound } from "next/navigation";
 
 const ProductDetails = async ({
   params,
@@ -9,6 +10,11 @@ const ProductDetails = async ({
   params: { productId: string };
 }) => {
   const productDetails = await getProductDetails(params.productId);
+  
+  if (!productDetails) {
+    notFound();
+  }
+
   const relatedProducts = await getRelatedProducts(params.productId);
 
   return (

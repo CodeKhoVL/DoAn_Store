@@ -2,6 +2,7 @@ import { connectToDB } from "@/lib/mongoDB";
 import { auth } from "@clerk/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import BookReservation from "@/lib/models/BookReservation";
+import mongoose from "mongoose";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,12 +19,32 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
 
+    // Kiểm tra xem sách đã được đặt trong khoảng thời gian này chưa
+    const existingReservation = await BookReservation.findOne({
+      productId: new mongoose.Types.ObjectId(productId),
+      status: { $in: ['pending', 'approved'] },
+      $or: [
+        {
+          pickupDate: { $lte: new Date(returnDate) },
+          returnDate: { $gte: new Date(pickupDate) }
+        }
+      ]
+    });
+
+    if (existingReservation) {
+      return new NextResponse(
+        "Sách này đã được đặt trong khoảng thời gian bạn chọn",
+        { status: 409 }
+      );
+    }
+
     const reservation = await BookReservation.create({
       userId,
-      productId,
+      productId: new mongoose.Types.ObjectId(productId),
       reservationDate: new Date(),
       pickupDate: new Date(pickupDate),
       returnDate: new Date(returnDate),
+      status: 'pending',
       note
     });
 
@@ -44,6 +65,7 @@ export async function GET(req: NextRequest) {
     await connectToDB();
     
     const reservations = await BookReservation.find({ userId })
+      .populate('productId')
       .sort({ createdAt: -1 });
 
     return NextResponse.json(reservations, { status: 200 });

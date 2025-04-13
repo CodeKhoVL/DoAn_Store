@@ -17,15 +17,13 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
     productInfo.sizes[0]
   );
   const [quantity, setQuantity] = useState<number>(1);
-
-  const cart = useCart();
-  const router = useRouter();
-
-  // Thêm state cho form đặt sách
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [pickupDate, setPickupDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
   const [note, setNote] = useState("");
+
+  const cart = useCart();
+  const router = useRouter();
 
   // Hàm xử lý giá tiền
   const formatPrice = (price: any) => {
@@ -74,7 +72,6 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
 
   const handleReservation = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       const response = await fetch("/api/reservations", {
         method: "POST",
@@ -90,7 +87,8 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
       });
 
       if (!response.ok) {
-        throw new Error("Đặt sách thất bại");
+        const errorText = await response.text();
+        throw new Error(errorText);
       }
 
       toast.success("Đặt sách thành công!");
@@ -98,7 +96,11 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
       router.push("/my_loans");
     } catch (error) {
       console.error("Error reserving book:", error);
-      toast.error("Đặt sách thất bại. Vui lòng thử lại!");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Đặt sách thất bại. Vui lòng thử lại!"
+      );
     }
   };
 
@@ -198,7 +200,7 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
       </div>
 
       {showReservationForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full">
             <h2 className="text-heading4-bold mb-4">Đặt sách</h2>
             <form onSubmit={handleReservation} className="flex flex-col gap-4">
