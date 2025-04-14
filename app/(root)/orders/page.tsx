@@ -48,7 +48,7 @@ const Orders = async () => {
       <p className="text-heading3-bold my-10">Your Orders</p>
 
       {(!orders || orders.length === 0) && (
-        <p className="text-body-bold my-5">You have no orders yet.</p>
+        <p className="text-body-bold my-5">Không có món đồ nào.</p>
       )}
 
       <div className="flex flex-col gap-10">
@@ -60,7 +60,8 @@ const Orders = async () => {
             <div className="flex gap-20 max-md:flex-col max-md:gap-3">
               <p className="text-base-bold">Order ID: {order._id}</p>
               <p className="text-base-bold">
-                Total Amount: ${order.totalAmount}
+                Cái giá phải trả: {order.totalAmount.toLocaleString("vi-VN")}{" "}
+                VNĐ
               </p>
             </div>
 
@@ -108,13 +109,15 @@ const Orders = async () => {
                         </p>
                       )}
                       <p className="text-small-medium">
-                        Unit price:{" "}
+                        Giá:{" "}
                         <span className="text-small-bold">
-                          {orderItem.product?.price || "N/A"}
+                          {orderItem.product?.price?.toLocaleString("vi-VN") ||
+                            "N/A"}{" "}
+                          VNĐ
                         </span>
                       </p>
                       <p className="text-small-medium">
-                        Quantity:{" "}
+                        Số lượng:{" "}
                         <span className="text-small-bold">
                           {orderItem.quantity}
                         </span>

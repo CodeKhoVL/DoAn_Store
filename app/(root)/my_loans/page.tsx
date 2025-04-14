@@ -15,7 +15,9 @@ interface ReservationWithProduct extends BookReservationType {
 
 const MyLoans = () => {
   const { user } = useUser();
-  const [reservations, setReservations] = useState<ReservationWithProduct[]>([]);
+  const [reservations, setReservations] = useState<ReservationWithProduct[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -25,19 +27,21 @@ const MyLoans = () => {
       setLoading(true);
       setError(null);
       const response = await fetch("/api/reservations");
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to fetch reservations');
+        throw new Error(errorData.error || "Failed to fetch reservations");
       }
-      
+
       const data = await response.json();
       console.log("Fetched reservations:", data);
       setReservations(data);
     } catch (error) {
       console.error("Error fetching reservations:", error);
-      setError(error instanceof Error ? error.message : 'Failed to load reservations');
-      toast.error('Could not load your reservations');
+      setError(
+        error instanceof Error ? error.message : "Failed to load reservations"
+      );
+      toast.error("Could not load your reservations");
     } finally {
       setLoading(false);
     }
@@ -51,14 +55,14 @@ const MyLoans = () => {
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800';
+      case "approved":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "completed":
+        return "bg-blue-100 text-blue-800";
       default:
-        return 'bg-yellow-100 text-yellow-800';
+        return "bg-yellow-100 text-yellow-800";
     }
   };
 
@@ -84,11 +88,11 @@ const MyLoans = () => {
   return (
     <div className="px-10 py-5">
       <h1 className="text-heading3-bold my-10">Sách đã đặt</h1>
-      
+
       {reservations.length === 0 ? (
         <div className="text-center">
           <p className="text-body-bold mb-4">Bạn chưa đặt sách nào</p>
-          <Link 
+          <Link
             href="/"
             className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
@@ -98,8 +102,8 @@ const MyLoans = () => {
       ) : (
         <div className="flex flex-col gap-4">
           {reservations.map((reservation) => (
-            <div 
-              key={reservation._id} 
+            <div
+              key={reservation._id}
               className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex gap-4 items-start">
@@ -111,7 +115,7 @@ const MyLoans = () => {
                     className="object-cover"
                   />
                 </div>
-                
+
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
                     <div>
@@ -122,17 +126,28 @@ const MyLoans = () => {
                         {reservation.product.category}
                       </p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm ${getStatusBadgeColor(reservation.status)}`}>
-                      {reservation.status === 'pending' ? 'Chờ duyệt' :
-                       reservation.status === 'approved' ? 'Đã duyệt' :
-                       reservation.status === 'rejected' ? 'Từ chối' : 'Hoàn thành'}
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm ${getStatusBadgeColor(
+                        reservation.status
+                      )}`}
+                    >
+                      {reservation.status === "pending"
+                        ? "Chờ duyệt"
+                        : reservation.status === "approved"
+                        ? "Đã duyệt"
+                        : reservation.status === "rejected"
+                        ? "Từ chối"
+                        : "Hoàn thành"}
                     </span>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                     <p className="text-small-medium">
                       <span className="text-grey-2">Ngày đặt:</span>{" "}
-                      {format(new Date(reservation.reservationDate), "dd/MM/yyyy")}
+                      {format(
+                        new Date(reservation.reservationDate),
+                        "dd/MM/yyyy"
+                      )}
                     </p>
                     <p className="text-small-medium">
                       <span className="text-grey-2">Ngày lấy sách:</span>{" "}
@@ -143,7 +158,7 @@ const MyLoans = () => {
                       {format(new Date(reservation.returnDate), "dd/MM/yyyy")}
                     </p>
                   </div>
-                  
+
                   {reservation.note && (
                     <div className="mt-2">
                       <p className="text-small-medium">
