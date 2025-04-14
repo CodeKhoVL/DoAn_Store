@@ -32,14 +32,25 @@ export const getCollectionDetails = async (collectionId: string) => {
 
 export const getProducts = async () => {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`);
+    console.log('Fetching products from:', `${process.env.NEXT_PUBLIC_API_URL}/products`);
+    
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     
     if (!response.ok) {
       console.error(`API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Error details:', errorText);
       return [];
     }
     
-    return await response.json();
+    const products = await response.json();
+    console.log(`Successfully fetched ${products.length} products`);
+    return products;
   } catch (error) {
     console.error("Error fetching products:", error);
     return [];

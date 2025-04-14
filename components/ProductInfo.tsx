@@ -93,7 +93,9 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
 
       toast.success("Đặt sách thành công!");
       setShowReservationForm(false);
-      router.push("/my_loans");
+      
+      // Force a hard navigation to ensure fresh data
+      window.location.href = '/my_loans';
     } catch (error) {
       console.error("Error reserving book:", error);
       toast.error(

@@ -6,23 +6,38 @@ import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 interface ReservationWithProduct extends BookReservationType {
-  product?: ProductType;
+  product: ProductType;
 }
 
 const MyLoans = () => {
   const { user } = useUser();
   const [reservations, setReservations] = useState<ReservationWithProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const getReservations = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await fetch("/api/reservations");
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to fetch reservations');
+      }
+      
       const data = await response.json();
+      console.log("Fetched reservations:", data);
       setReservations(data);
     } catch (error) {
       console.error("Error fetching reservations:", error);
+      setError(error instanceof Error ? error.message : 'Failed to load reservations');
+      toast.error('Could not load your reservations');
     } finally {
       setLoading(false);
     }
@@ -34,7 +49,7 @@ const MyLoans = () => {
     }
   }, [user]);
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'approved':
         return 'bg-green-100 text-green-800';
@@ -47,19 +62,6 @@ const MyLoans = () => {
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return 'Đã duyệt';
-      case 'rejected':
-        return 'Từ chối';
-      case 'completed':
-        return 'Hoàn thành';
-      default:
-        return 'Chờ duyệt';
-    }
-  };
-
   if (!user) {
     return (
       <div className="px-10 py-5">
@@ -69,6 +71,15 @@ const MyLoans = () => {
   }
 
   if (loading) return <Loader />;
+
+  if (error) {
+    return (
+      <div className="px-10 py-5">
+        <h1 className="text-heading3-bold my-10">Sách đã đặt</h1>
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-10 py-5">
@@ -89,33 +100,32 @@ const MyLoans = () => {
           {reservations.map((reservation) => (
             <div 
               key={reservation._id} 
-              className="border rounded-lg p-6 hover:bg-grey-1"
+              className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="flex gap-6">
-                {reservation.product && (
-                  <div className="flex-shrink-0">
-                    <Image
-                      src={reservation.product.media[0]}
-                      alt={reservation.product.title}
-                      width={120}
-                      height={160}
-                      className="rounded-lg object-cover"
-                    />
-                  </div>
-                )}
+              <div className="flex gap-4 items-start">
+                <div className="w-32 h-32 relative rounded-lg overflow-hidden">
+                  <Image
+                    src={reservation.product.media[0]}
+                    alt={reservation.product.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 
-                <div className="flex flex-col gap-2 flex-grow">
+                <div className="flex-1">
                   <div className="flex justify-between items-start">
                     <div>
-                      {reservation.product && (
-                        <h2 className="text-heading4-bold mb-2">{reservation.product.title}</h2>
-                      )}
-                      <p className="text-small-medium text-grey-2">
-                        Mã đặt sách: {reservation._id}
+                      <h3 className="text-lg font-semibold mb-1">
+                        {reservation.product.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm">
+                        {reservation.product.category}
                       </p>
                     </div>
-                    <span className={`px-4 py-2 rounded-full text-small-bold capitalize ${getStatusColor(reservation.status)}`}>
-                      {getStatusText(reservation.status)}
+                    <span className={`px-3 py-1 rounded-full text-sm ${getStatusBadgeColor(reservation.status)}`}>
+                      {reservation.status === 'pending' ? 'Chờ duyệt' :
+                       reservation.status === 'approved' ? 'Đã duyệt' :
+                       reservation.status === 'rejected' ? 'Từ chối' : 'Hoàn thành'}
                     </span>
                   </div>
                   
