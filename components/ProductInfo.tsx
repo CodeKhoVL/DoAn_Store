@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { format } from "date-fns";
 import { MinusCircle, PlusCircle } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
 
 import useCart from "@/lib/hooks/useCart";
 import HeartFavorite from "./HeartFavorite";
 
 const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
+  const { getToken } = useAuth();
   const [selectedColor, setSelectedColor] = useState<string>(
     productInfo.colors[0]
   );
@@ -73,10 +75,12 @@ const ProductInfo = ({ productInfo }: { productInfo: ProductType }) => {
   const handleReservation = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const token = await getToken();
       const response = await fetch("/api/reservations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           productId: productInfo._id,
