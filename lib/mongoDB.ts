@@ -1,9 +1,11 @@
-import mongoose from "mongoose";
+import mongoose, { ConnectOptions } from "mongoose";
 
 let isConnected: boolean = false;
 
 export const connectToDB = async (): Promise<void> => {
-  mongoose.set("strictQuery", true)
+  if (!process.env.MONGODB_URL) {
+    throw new Error("MongoDB URL is not defined in environment variables");
+  }
 
   if (isConnected) {
     console.log("MongoDB is already connected");
@@ -11,13 +13,18 @@ export const connectToDB = async (): Promise<void> => {
   }
 
   try {
-    await mongoose.connect(process.env.MONGODB_URL || "", {
-      dbName: "library" // Changed to match library_admin
-    })
+    const options: ConnectOptions = {
+      dbName: "library",
+      retryWrites: true,
+      w: "majority", // Fix: đúng kiểu của W
+    };
 
+    await mongoose.connect(process.env.MONGODB_URL, options);
     isConnected = true;
-    console.log("MongoDB is connected");
+    console.log("MongoDB connected successfully");
   } catch (err) {
-    console.log("MongoDB connection error:", err)
+    isConnected = false;
+    console.error("MongoDB connection error:", err);
+    throw new Error("Failed to connect to MongoDB");
   }
-}
+};

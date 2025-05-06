@@ -26,22 +26,26 @@ const MyLoans = () => {
     try {
       setLoading(true);
       setError(null);
+
       const response = await fetch("/api/reservations");
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response.json();
         throw new Error(errorData.error || "Failed to fetch reservations");
       }
 
       const data = await response.json();
-      console.log("Fetched reservations:", data);
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid response format");
+      }
+
       setReservations(data);
     } catch (error) {
       console.error("Error fetching reservations:", error);
       setError(
         error instanceof Error ? error.message : "Failed to load reservations"
       );
-      toast.error("Could not load your reservations");
+      toast.error("Không thể tải danh sách sách đã đặt");
     } finally {
       setLoading(false);
     }

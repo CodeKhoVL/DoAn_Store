@@ -103,12 +103,16 @@ export async function GET(req: NextRequest) {
   try {
     const { userId } = auth();
     if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return new NextResponse(
+        JSON.stringify({ error: "Unauthorized" }), 
+        { 
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     await connectToDB();
-    
-    console.log("Fetching reservations for user:", userId);
     
     const reservations = await BookReservation.find({ userId })
       .populate({
@@ -118,30 +122,36 @@ export async function GET(req: NextRequest) {
       })
       .sort({ createdAt: -1 });
 
-    console.log(`Found ${reservations.length} reservations`);
-    
-    // Transform the data to match the expected format
-    const formattedReservations = reservations.map(reservation => ({
-      ...reservation.toObject(),
-      product: reservation.productId,
-      productId: reservation.productId._id
-    }));
+    // Kiểm tra xem sách có tồn tại không
+    const validReservations = reservations.filter(
+      (reservation) => reservation.productId != null
+    );
+
+    // Format dữ liệu trả về
+    const formattedReservations = validReservations.map(reservation => {
+      const res = reservation.toObject();
+      return {
+        ...res,
+        product: res.productId,
+        productId: res.productId._id
+      };
+    });
 
     return NextResponse.json(formattedReservations, { 
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
+    
   } catch (error) {
     console.error("[RESERVATION_GET]", error);
     return new NextResponse(
-      JSON.stringify({ error: "Failed to fetch reservations" }), 
+      JSON.stringify({ 
+        error: "Failed to fetch reservations",
+        details: error instanceof Error ? error.message : "Unknown error"
+      }), 
       { 
         status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        headers: { 'Content-Type': 'application/json' }
       }
     );
   }
